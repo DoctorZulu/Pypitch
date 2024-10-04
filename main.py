@@ -8,6 +8,7 @@ RATE = 44100
 CHUNK = 1024
 delay_time = 0.2 
 decay_factor = 0.5 
+pitch_factor = 1.2
 
 p = pyaudio.PyAudio();
 
@@ -34,7 +35,6 @@ input_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, f
 #output stream
 output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True, frames_per_buffer=CHUNK, output_device_index=vb_index)
 
-pitch_factor = 1.2
 
 
 def pitch_shift(data, pitch_factor):
