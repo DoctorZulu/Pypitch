@@ -6,8 +6,14 @@ FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
 CHUNK = 1024
+delay_time = 0.2 
+decay_factor = 0.5 
 
 p = pyaudio.PyAudio();
+
+delay_samples = int(delay_time * RATE)
+
+delay_buffer = np.zeros(delay_samples)
 
 def find_device(name):
     for i in range(p.get_device_count()):
@@ -30,6 +36,7 @@ output_stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, output=True,
 
 pitch_factor = 1.2
 
+
 def pitch_shift(data, pitch_factor):
     audio_data = np.frombuffer(data, dtype=np.int16)
 
@@ -38,9 +45,22 @@ def pitch_shift(data, pitch_factor):
 
     return resampled_audio.astype(np.int16)
 
+#Schroeder Reverb, basic comb filter type reverb algo
+def apply_reverb(data):
+    global delay_buffer
+
+    audio_data = np.frombuffer(data, dtype=np.float32)
+
+    output_data = audio_data + decay_factor * delay_buffer[:len(audio_data)]
+
+    delay_buffer = np.roll(delay_buffer, -len(audio_data))
+    delay_buffer[-len(audio_data):] = audio_data
+    return output_data.astype(np.float32).tobytes()
+
+
 
 try:
-    while True:
+    while input_stream.is_active():
 
         data = input_stream.read(CHUNK)
 
